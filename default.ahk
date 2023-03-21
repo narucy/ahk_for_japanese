@@ -1,7 +1,7 @@
 ﻿#Requires AutoHotkey v2.0
 #SingleInstance
 
-SCREEN_WIDTH := 1920
+SCREEN_WIDTH := 1920 * 2
 SCREEN_HEIGHT := 1080
 
 EDITOR := "C:\Users\Naru41\AppData\Local\Programs\Microsoft VS Code\Code.exe "
@@ -24,7 +24,7 @@ sc070:: RButton
 +^h:: ^h
 +^m:: ^m
 
-SC07B & F12:: {
+SC07B & F10:: {
     Sleep 1000
     SendMessage 0x112, 0xF170, 2, , "Program Manager"
 }
@@ -38,15 +38,15 @@ SC07B & o:: Run BROWSER . "https://www.weblio.jp"
 
 SC07B & n:: Reload
 
-SC07B & i:: WinShift(0, -200)
-SC07B & j:: WinShift(-200, 0)
-SC07B & k:: WinShift(0, 200)
-SC07B & l:: WinShift(200, 0)
+SC07B & i:: WinShift(0, -240)
+SC07B & j:: WinShift(-240, 0)
+SC07B & k:: WinShift(0, 240)
+SC07B & l:: WinShift(240, 0)
 
-SC07B & e:: WinResize(0, -200)
-SC07B & s:: WinResize(-200, 0)
-SC07B & x:: WinResize(0, 200)
-SC07B & d:: WinResize(200, 0)
+SC07B & e:: WinResize(0, -240)
+SC07B & s:: WinResize(-240, 0)
+SC07B & x:: WinResize(0, 240)
+SC07B & d:: WinResize(240, 0)
 
 SC07B & Up:: SoundSetVolume +1
 SC07B & Down:: SoundSetVolume -1
@@ -88,12 +88,19 @@ WinShift(horizontal, vertical)
 {
     WinGetPos &x, &y, &w, &h, "A"
 
-    x += horizontal
-    if x < 0 {
-        x := 0
-    } else if x + w > SCREEN_WIDTH {
-        x := SCREEN_WIDTH - w
+    if (x + w < 1920 && x + w + horizontal > 1920) || (x == 1920 && horizontal < 0) {
+        x := 1920 - w
+    } else if (x > 1920 && x + horizontal < 1920) || (x + w == 1920 && horizontal > 0) {
+        x := 1920
+    } else {
+        x += horizontal
+        if x < 0 {
+            x := 0
+        } else if x + w > SCREEN_WIDTH {
+            x := SCREEN_WIDTH - w
+        }
     }
+
     y += vertical
     if y < 0 {
         y := 0
@@ -128,6 +135,14 @@ WinResize(horizontal, vertical)
             h := SCREEN_HEIGHT
         }
         y := SCREEN_HEIGHT - h
+    }
+
+    if x < 1920 && x + w > 1920 {
+        if 1920 - x < x + w - 1920 {
+            x := 1920
+        } else {
+            x := 1920 - w
+        }
     }
 
     WinMove x, y, w, h, "A"
