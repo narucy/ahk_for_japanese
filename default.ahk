@@ -5,7 +5,8 @@ SCREEN_WIDTH := 1920 * 2
 SCREEN_HEIGHT := 1080
 
 EDITOR := "C:\Users\Naru41\AppData\Local\Programs\Microsoft VS Code\Code.exe "
-BROWSER := "C:\Program Files\Google\Chrome\Application\chrome.exe --profile-directory=Default "
+; BROWSER := "C:\Program Files\Google\Chrome\Application\chrome.exe --profile-directory=Default "
+BROWSER := "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe --disable-features=msUndersideButton "
 
 sc079:: LButton
 sc070:: RButton
@@ -31,10 +32,12 @@ SC07B & F10:: {
 
 SC07B & 1:: Run "C:\Users\Naru41\Downloads"
 SC07B & 9:: Run EDITOR . "C:\Users\Naru41\Documents\memo.txt"
+SC07B & 0:: Edit
 
 SC07B & g:: Run BROWSER
-SC07B & t:: Run BROWSER . "https://www.deepl.com/ja/translator"
+SC07B & a:: Run BROWSER . "https://www.deepl.com/ja/translator"
 SC07B & o:: Run BROWSER . "https://www.weblio.jp"
+SC07B & w:: Run BROWSER . "https://ejje.weblio.jp/turbo"
 
 SC07B & n:: Reload
 
@@ -55,7 +58,7 @@ SC07B & LButton:: {
     CoordMode "Mouse", "Window"
     MouseGetPos &_, &_, &window_id
 
-    WinActivate "ahk_id" . window_id
+    WinActivate "ahk_id " . window_id
     MouseGetPos &x, &y
 
     CoordMode "Mouse", "Screen"
@@ -84,64 +87,86 @@ MButton:: {
 }
 #HotIf
 
+#HotIf WinActive("ahk_exe SNAP.exe")
+MButton:: {
+    WinGetPos &_, &_, &width, &height, "A"
+
+    board_width := height * 3 / 4
+    x := (width - board_width) / 2 + board_width * 0.85
+    y := height * 0.9
+
+    Click x, y
+}
+#HotIf
+
 WinShift(horizontal, vertical)
 {
     WinGetPos &x, &y, &w, &h, "A"
+    bw := GetActiveWindowBorderWidth()
 
-    if (x + w < 1920 && x + w + horizontal > 1920) || (x == 1920 && horizontal < 0) {
-        x := 1920 - w
-    } else if (x > 1920 && x + horizontal < 1920) || (x + w == 1920 && horizontal > 0) {
-        x := 1920
-    } else {
-        x += horizontal
-        if x < 0 {
-            x := 0
-        } else if x + w > SCREEN_WIDTH {
-            x := SCREEN_WIDTH - w
+    x += horizontal
+    if x < 0 {
+        x := -bw
+    } else if x + w > SCREEN_WIDTH {
+        x := SCREEN_WIDTH - w + bw
+    } else if x < 1920 && x + w > 1920 {
+        if horizontal < 0 {
+            x := 1920 - w + bw
+        } else {
+            x := 1920 - bw
         }
     }
 
     y += vertical
     if y < 0 {
         y := 0
-    } else if y + h > SCREEN_HEIGHT {
-        y := SCREEN_HEIGHT - h
+    } else if y + h + bw > SCREEN_HEIGHT {
+        y := SCREEN_HEIGHT - h + bw
     }
 
     WinMove x, y, w, h, "A"
 }
 
+GetActiveWindowBorderWidth()
+{
+    n := WinGetProcessName("A")
+    return n == "msedge.exe" ? 6 : 0
+}
+
 WinResize(horizontal, vertical)
 {
     WinGetPos &x, &y, &w, &h, "A"
+    bw := GetActiveWindowBorderWidth()
 
-    if x < 0 {
-        x := 0
+    if x < -bw {
+        x := -bw
     }
     w += horizontal
     if x + w > SCREEN_WIDTH {
-        if w > SCREEN_WIDTH {
-            w := SCREEN_WIDTH
+        if w > 1920 {
+            w := 1920
         }
-        x := SCREEN_WIDTH - w
+        x := SCREEN_WIDTH - w + bw
+    }
+    if x < 1920 && x + w > 1920 {
+        if 1920 - x < x + w - 1920 {
+            x := 1920 - bw
+        } else {
+            x := 1920 - w + bw
+        }
     }
 
     if y < 0 {
         y := 0
     }
     h += vertical
-    if y + h > SCREEN_HEIGHT {
-        if y := SCREEN_HEIGHT {
-            h := SCREEN_HEIGHT
+    if y + h + bw > SCREEN_HEIGHT {
+        if h + bw > SCREEN_HEIGHT {
+            h := SCREEN_HEIGHT + bw
         }
-        y := SCREEN_HEIGHT - h
-    }
-
-    if x < 1920 && x + w > 1920 {
-        if 1920 - x < x + w - 1920 {
-            x := 1920
-        } else {
-            x := 1920 - w
+        y := SCREEN_HEIGHT - h + bw
+        if y < 0 {
+            y := 0
         }
     }
 
